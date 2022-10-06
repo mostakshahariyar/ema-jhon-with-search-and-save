@@ -3,6 +3,7 @@ import Cart from '../Cart/Cart';
 import Product from '../Product/Product';
 import { addToDb, getStoredCart } from '../../utilities/fakedb';
 import './Shop.css';
+import { Link } from 'react-router-dom';
 
 const Shop = () => {
     const [products, setProducts] = useState([]);
@@ -14,6 +15,7 @@ const Shop = () => {
         fetch('./products.JSON')
             .then(res => res.json())
             .then(data => {
+                // console.log(data);
                 setProducts(data);
                 setDisplayProducts(data);
             });
@@ -27,6 +29,7 @@ const Shop = () => {
                 const addedProduct = products.find(product => product.key === key);
                 if (addedProduct) {
                     const quantity = savedCart[key];
+                    // console.log(quantity)
                     addedProduct.quantity = quantity;
                     storedCart.push(addedProduct);
                 }
@@ -36,8 +39,21 @@ const Shop = () => {
     }, [products])
 
     const handleAddToCart = (product) => {
-        const newCart = [...cart, product];
+        const exists = cart.find(pd => pd.key === product.key);
+        let newCart = [];
+        // eslint-disable-next-line no-unused-expressions
+        if (exists) {
+            const rest = cart.filter(pd => pd.key !== product.key);
+            exists.quantity = exists.quantity + 1;
+            newCart = [...rest, product];
+        }
+        else {
+            product.quantity = 1;
+            newCart = [...cart, product]
+        }
+
         setCart(newCart);
+        console.log(newCart);
         // save to local storage (for now)
         addToDb(product.key);
     }
@@ -70,7 +86,11 @@ const Shop = () => {
                     }
                 </div>
                 <div className="cart-container">
-                    <Cart cart={cart}></Cart>
+                    <Cart cart={cart}>
+                        <Link to={'/orders'}>
+                            <button className="btn-regular">Review</button>
+                        </Link>
+                    </Cart>
                 </div>
             </div>
         </>
